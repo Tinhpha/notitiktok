@@ -6,7 +6,7 @@ TOKEN = os.getenv("TOKEN")  # Railway dùng biến môi trường
 
 intents = discord.Intents.default()
 intents.message_content = True  # BẮT BUỘC
-
+intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 

@@ -6,7 +6,7 @@ TOKEN = os.getenv("TOKEN")
 
 # ====== CONFIG ======
 WELCOME_CHANNEL_ID = 1475105492614254592
-RULE_CHANNEL_ID = 1475105584624701543
+RULE_CHANNEL_ID = 1474732816725180447
 ANNOUNCE_CHANNEL_ID = 1475046093921189964
 MEMBER_ROLE_ID = 1475043789465714819
 # ====================
@@ -61,5 +61,52 @@ async def on_message(message):
         return
     await bot.process_commands(message)
 
+# ====== TIKTOK LIVE NOTIFICATION ======
+from TikTokLive import TikTokLiveClient
+from TikTokLive.events import ConnectEvent
+import asyncio
 
+LIVE_CHANNEL_ID = 1475007140954378401
+TIKTOK_USERNAME = "saaapizzy"
+
+tiktok_client = TikTokLiveClient(unique_id=TIKTOK_USERNAME)
+
+
+@tiktok_client.on(ConnectEvent)
+async def on_tiktok_live(event: ConnectEvent):
+    print("🔴 TikTok LIVE detected!")
+
+    channel = bot.get_channel(LIVE_CHANNEL_ID)
+    if channel:
+        embed = discord.Embed(
+            title="🔴 Saaapizzy ĐÃ LÊN SÓNG!",
+            description="🔥 Stream đã bắt đầu trên TikTok!",
+            color=discord.Color.red()
+        )
+
+        embed.add_field(
+            name="🎥 Xem trực tiếp tại đây:",
+            value="https://www.tiktok.com/@saaapizzy/live",
+            inline=False
+        )
+
+        embed.set_thumbnail(
+            url="https://www.tiktok.com/favicon.ico"
+        )
+
+        embed.set_footer(text="Vào xem và thả tim nào anh em ❤️")
+
+        await channel.send("@everyone", embed=embed)
+        print("✅ Đã gửi thông báo LIVE embed")
+
+
+async def start_tiktok_client():
+    await tiktok_client.start()
+
+
+@bot.event
+async def on_ready():
+    print(f"✅ Bot đã đăng nhập với tên {bot.user}")
+    print("Members intent:", bot.intents.members)
+    bot.loop.create_task(start_tiktok_client())
 bot.run(TOKEN)

@@ -6,7 +6,7 @@ TOKEN = os.getenv("TOKEN")
 
 # ====== CONFIG ======
 WELCOME_CHANNEL_ID = 1475105492614254592
-RULE_CHANNEL_ID = 1474732816725180447
+RULE_CHANNEL_ID = 1475105584624701543
 ANNOUNCE_CHANNEL_ID = 1475046093921189964
 MEMBER_ROLE_ID = 1475043789465714819
 # ====================
@@ -79,7 +79,7 @@ async def on_tiktok_live(event: ConnectEvent):
     channel = bot.get_channel(LIVE_CHANNEL_ID)
     if channel:
         embed = discord.Embed(
-            title="🔴 Saaapizzy ĐÃ LÊN SÓNG!",
+            title="🔴 Em Sa ĐÃ LÊN SÓNG!",
             description="🔥 Stream đã bắt đầu trên TikTok!",
             color=discord.Color.red()
         )
@@ -94,7 +94,7 @@ async def on_tiktok_live(event: ConnectEvent):
             url="https://www.tiktok.com/favicon.ico"
         )
 
-        embed.set_footer(text="Vào xem và thả tim nào anh em ❤️")
+        embed.set_footer(text="Vào xem và thả tim cho em với ❤️")
 
         await channel.send("@everyone", embed=embed)
         print("✅ Đã gửi thông báo LIVE embed")

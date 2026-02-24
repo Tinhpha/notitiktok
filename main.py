@@ -40,7 +40,7 @@ async def on_ready():
     client.loop.create_task(check_live_loop())
 
 
-# ===== LIVE CHECK =====
+# ===== LIVE CHECK LOOP =====
 async def check_live_loop():
     global live_sent
 
@@ -55,6 +55,7 @@ async def check_live_loop():
             await asyncio.sleep(30)
 
 
+# ===== LIVE EVENT =====
 @tiktok.on(ConnectEvent)
 async def on_connect(event: ConnectEvent):
     global live_sent
@@ -70,6 +71,7 @@ async def on_connect(event: ConnectEvent):
             color=0xff0050
         )
         embed.set_footer(text="Vào xem ngay đi anh em 🚀")
+
         await channel.send(content=MENTION_TEXT, embed=embed)
 
     live_sent = True
@@ -100,15 +102,38 @@ async def on_member_join(member):
         embed.set_thumbnail(
             url=member.avatar.url if member.avatar else member.default_avatar.url
         )
+        embed.set_footer(text="Chúc bạn có thời gian vui vẻ tại đây 💙")
+
         await channel.send(embed=embed)
 
 
-# ===== ANTI SPAM =====
+# ===== MESSAGE HANDLER =====
 @client.event
 async def on_message(message):
     if message.author.bot:
         return
 
+    # ===== ADMIN TEST LIVE =====
+    if message.content == "!testlive":
+        if message.author.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="🧪 TEST THÔNG BÁO LIVE",
+                description=f"https://www.tiktok.com/@{TIKTOK_USERNAME}/live",
+                color=0xff0050
+            )
+            embed.set_footer(text="Chỉ admin mới dùng được lệnh này")
+
+            await message.channel.send(
+                content="@everyone",
+                embed=embed
+            )
+        else:
+            await message.channel.send(
+                f"{message.author.mention} Bạn không có quyền dùng lệnh này."
+            )
+        return
+
+    # ===== ANTI SPAM =====
     user_id = message.author.id
     current_time = time.time()
 
@@ -127,7 +152,7 @@ async def on_message(message):
         user_messages[user_id] = []
 
 
-# ===== KEEP ALIVE WEB =====
+# ===== KEEP ALIVE WEB FOR RAILWAY =====
 app = Flask(__name__)
 
 @app.route("/")

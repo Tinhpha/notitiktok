@@ -25,18 +25,22 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # ====== MEMBER JOIN EVENT ======
 @bot.event
 async def on_member_join(member):
+    print("🔥 MEMBER JOINED:", member.name)
+
     role = member.guild.get_role(MEMBER_ROLE_ID)
     if role:
         await member.add_roles(role)
+        print("✅ Đã gán role Member")
 
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     if channel:
         message = (
             f"👋 Chào mừng {member.mention} đến với server!\n\n"
-            f"📖 Đọc luật tại: <#{RULE_CHANNEL_ID}>\n"
-            f"📢 Thông báo mới nhất: <#{ANNOUNCE_CHANNEL_ID}>"
+            f"📖 Vui lòng đọc luật tại: <#{RULE_CHANNEL_ID}>\n"
+            f"📢 Xem thông báo mới nhất tại: <#{ANNOUNCE_CHANNEL_ID}>"
         )
         await channel.send(message)
+        print("✅ Đã gửi tin chào")
 
 # ====== TEST COMMAND ======
 @bot.command()
@@ -93,7 +97,8 @@ async def check_live_status():
         except Exception as e:
             print("❌ Lỗi check live:", e)
 
-        await asyncio.sleep(60)
+        await asyncio.sleep(60)  # 1 phút check 1 lần
+
 
 # ====== READY EVENT ======
 @bot.event

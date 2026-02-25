@@ -60,14 +60,11 @@ async def check_live_status():
 
     while True:
         try:
-            room_info = await tiktok_client.web.fetch_room_info()
+            live_status = await tiktok_client.is_live()
 
-            if room_info and room_info.get("status") == 2:
-
+            if live_status:
                 if not is_live:
                     print("🔴 LIVE detected!")
-
-                    thumbnail = room_info.get("cover")
 
                     channel = bot.get_channel(LIVE_CHANNEL_ID)
                     if channel:
@@ -83,15 +80,11 @@ async def check_live_status():
                             inline=False
                         )
 
-                        if thumbnail:
-                            embed.set_image(url=thumbnail)
-
                         embed.set_footer(text="Vào xem và thả tim cho em với ❤️")
 
                         await channel.send("@everyone", embed=embed)
 
                     is_live = True
-
             else:
                 if is_live:
                     print("⚫ Live ended")
@@ -100,8 +93,7 @@ async def check_live_status():
         except Exception as e:
             print("❌ Lỗi check live:", e)
 
-        await asyncio.sleep(60)  # 1 phút check 1 lần
-
+        await asyncio.sleep(60)
 
 # ====== READY EVENT ======
 @bot.event

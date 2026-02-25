@@ -72,6 +72,8 @@ async def check_live_status():
 
                     channel = bot.get_channel(LIVE_CHANNEL_ID)
                     if channel:
+                        live_url = f"https://www.tiktok.com/@{TIKTOK_USERNAME}/live"
+
                         embed = discord.Embed(
                             title="🔴 Em Sa ĐÃ LÊN SÓNG!",
                             description="🔥 Stream đã bắt đầu trên TikTok!",
@@ -80,13 +82,17 @@ async def check_live_status():
 
                         embed.add_field(
                             name="🎥 Xem trực tiếp:",
-                            value=f"https://www.tiktok.com/@{TIKTOK_USERNAME}/live",
+                            value=live_url,
                             inline=False
                         )
 
                         embed.set_footer(text="Vào xem và thả tim cho em với ❤️")
 
+                        # Gửi embed + ping
                         await channel.send("@everyone", embed=embed)
+
+                        # Gửi link riêng để Discord tự nhúng thumbnail
+                        await channel.send(live_url)
 
                     is_live = True
             else:

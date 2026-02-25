@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import os
+import asyncio
+from TikTokLive import TikTokLiveClient
 
 TOKEN = os.getenv("TOKEN")
 
@@ -9,51 +11,38 @@ WELCOME_CHANNEL_ID = 1475105492614254592
 RULE_CHANNEL_ID = 1475105584624701543
 ANNOUNCE_CHANNEL_ID = 1475046093921189964
 MEMBER_ROLE_ID = 1475043789465714819
+
+LIVE_CHANNEL_ID = 1475007140954378401
+TIKTOK_USERNAME = "saaapizzy"
 # ====================
 
 intents = discord.Intents.default()
 intents.message_content = True
-intents.members = True  # BẮT BUỘC
+intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-
-@bot.event
-async def on_ready():
-    print(f"✅ Bot đã đăng nhập với tên {bot.user}")
-    print("Members intent:", bot.intents.members)
-
 
 # ====== MEMBER JOIN EVENT ======
 @bot.event
 async def on_member_join(member):
-    print("🔥 MEMBER JOINED:", member.name)
-
-    # Gán role Member
     role = member.guild.get_role(MEMBER_ROLE_ID)
     if role:
         await member.add_roles(role)
-        print("✅ Đã gán role Member")
 
-    # Gửi tin nhắn chào
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     if channel:
         message = (
             f"👋 Chào mừng {member.mention} đến với server!\n\n"
-            "✈️ Chúng tôi rất vui mừng chào đón bạn gia nhập cộng đồng của chúng tôi!\n\n"
-            f"📖 Vui lòng đọc luật tại: <#{RULE_CHANNEL_ID}>\n"
-            f"📢 Xem thông báo mới nhất tại: <#{ANNOUNCE_CHANNEL_ID}>"
+            f"📖 Đọc luật tại: <#{RULE_CHANNEL_ID}>\n"
+            f"📢 Thông báo mới nhất: <#{ANNOUNCE_CHANNEL_ID}>"
         )
         await channel.send(message)
-        print("✅ Đã gửi tin chào")
 
-
-# ====== TEST LIVE ======
+# ====== TEST COMMAND ======
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def testlive(ctx):
     await ctx.send("🚀 Test thông báo LIVE thành công!")
-
 
 @bot.event
 async def on_message(message):
@@ -61,52 +50,64 @@ async def on_message(message):
         return
     await bot.process_commands(message)
 
-# ====== TIKTOK LIVE NOTIFICATION ======
-from TikTokLive import TikTokLiveClient
-from TikTokLive.events import ConnectEvent
-import asyncio
-
-LIVE_CHANNEL_ID = 1475007140954378401
-TIKTOK_USERNAME = "saaapizzy"
-
+# ====== TIKTOK LIVE SYSTEM ======
 tiktok_client = TikTokLiveClient(unique_id=TIKTOK_USERNAME)
+is_live = False
 
 
-@tiktok_client.on(ConnectEvent)
-async def on_tiktok_live(event: ConnectEvent):
-    print("🔴 TikTok LIVE detected!")
+async def check_live_status():
+    global is_live
 
-    channel = bot.get_channel(LIVE_CHANNEL_ID)
-    if channel:
-        embed = discord.Embed(
-            title="🔴 Em Sa ĐÃ LÊN SÓNG!",
-            description="🔥 Stream đã bắt đầu trên TikTok!",
-            color=discord.Color.red()
-        )
+    while True:
+        try:
+            room_info = await tiktok_client.web.fetch_room_info()
 
-        embed.add_field(
-            name="🎥 Xem trực tiếp tại đây:",
-            value="https://www.tiktok.com/@saaapizzy/live",
-            inline=False
-        )
+            if room_info and room_info.get("status") == 2:
 
-        embed.set_thumbnail(
-            url="https://www.tiktok.com/favicon.ico"
-        )
+                if not is_live:
+                    print("🔴 LIVE detected!")
 
-        embed.set_footer(text="Vào xem và thả tim cho em với ❤️")
+                    thumbnail = room_info.get("cover")
 
-        await channel.send("@everyone", embed=embed)
-        print("✅ Đã gửi thông báo LIVE embed")
+                    channel = bot.get_channel(LIVE_CHANNEL_ID)
+                    if channel:
+                        embed = discord.Embed(
+                            title="🔴 Em Sa ĐÃ LÊN SÓNG!",
+                            description="🔥 Stream đã bắt đầu trên TikTok!",
+                            color=discord.Color.red()
+                        )
+
+                        embed.add_field(
+                            name="🎥 Xem trực tiếp:",
+                            value=f"https://www.tiktok.com/@{TIKTOK_USERNAME}/live",
+                            inline=False
+                        )
+
+                        if thumbnail:
+                            embed.set_image(url=thumbnail)
+
+                        embed.set_footer(text="Vào xem và thả tim cho em với ❤️")
+
+                        await channel.send("@everyone", embed=embed)
+
+                    is_live = True
+
+            else:
+                if is_live:
+                    print("⚫ Live ended")
+                is_live = False
+
+        except Exception as e:
+            print("❌ Lỗi check live:", e)
+
+        await asyncio.sleep(60)  # 1 phút check 1 lần
 
 
-async def start_tiktok_client():
-    await tiktok_client.start()
-
-
+# ====== READY EVENT ======
 @bot.event
 async def on_ready():
     print(f"✅ Bot đã đăng nhập với tên {bot.user}")
-    print("Members intent:", bot.intents.members)
-    bot.loop.create_task(start_tiktok_client())
+    asyncio.create_task(check_live_status())
+
+
 bot.run(TOKEN)

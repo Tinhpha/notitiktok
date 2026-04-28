@@ -4,6 +4,21 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import asyncio
+import threading
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bot is alive"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+threading.Thread(target=run_web).start()
 from TikTokLive import TikTokLiveClient
 print("🔥 NEW CODE VERSION")
 TOKEN = os.getenv("DISCORD_TOKEN")

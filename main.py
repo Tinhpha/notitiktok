@@ -132,4 +132,11 @@ async def on_ready():
     asyncio.create_task(check_live_status())
 
 
-bot.run(TOKEN)
+import time
+
+while True:
+    try:
+        bot.run(TOKEN)
+    except Exception as e:
+        print("Bot bị lỗi:", e)
+        time.sleep(5)
